@@ -8,10 +8,6 @@ const { check, validationResult } = require('express-validator/check');
 const FoodDiary = require('../../models/FoodDiary');
 const User = require('../../models/User');
 
-// @route  POST api/
-// @desc   Create or update user profile
-// @access Private
-
 // @route  POST api/foodDiary
 // @desc   Create or update user profile
 // @access Private
@@ -56,34 +52,8 @@ router.post(
   }
 );
 
-// // @route  PUT api/foodDiary/breakfast
-// // @desc   Add breakfast
-// // @access Private
-// router.put('/breakfast', auth, async (req, res) => {
-//   console.log(req.body);
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ errors: errors.array() });
-//   }
-
-//   const { foodName, servings, day } = req.body;
-
-//   const newEntry = { foodName, servings };
-
-//   try {
-//     const diary = await FoodDiary.findOne({ user: req.user.id, day: day });
-//     console.log(diary);
-//     diary.breakfast.foodEaten.unshift(newEntry);
-//     diary.save();
-//     res.json(diary);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server error');
-//   }
-// });
-
 // @route  PUT api/foodDiary/entry
-// @desc   Add snack
+// @desc   Add entry
 // @access Private
 router.put('/entry', auth, async (req, res) => {
   console.log(req.body);
