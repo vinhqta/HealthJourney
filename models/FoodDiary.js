@@ -22,6 +22,9 @@ const FoodDiarySchema = new Schema({
       part: {
         type: String,
         required: true
+      },
+      calories: {
+        type: Number
       }
     }
   ]

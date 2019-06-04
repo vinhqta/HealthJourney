@@ -4,7 +4,10 @@ const config = require('config');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator/check');
+const fetch = require('node-fetch');
 
+const xappid = config.get('x-app-id');
+const xappkey = config.get('x-app-key');
 const FoodDiary = require('../../models/FoodDiary');
 const User = require('../../models/User');
 
@@ -23,6 +26,21 @@ router.get('/day', auth, async (req, res) => {
         .json({ msg: 'There is no diary for this user day' });
     }
     res.json(diary);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route  GET api/foodDiary/foodDiaries
+// @desc   Get all of current user's food diaries
+// @access Private
+router.get('/foodDiaries', auth, async (req, res) => {
+  try {
+    const diaries = await FoodDiary.find({ user: req.user.id }).sort({
+      date: -1
+    });
+    res.json(diaries);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -93,9 +111,51 @@ router.put('/entry', auth, async (req, res) => {
   try {
     const diary = await FoodDiary.findOne({ user: req.user.id, day: day });
 
-    diary.foodEaten.unshift(newEntry);
-    diary.save();
-    res.json(diary);
+    // const getFoodURI =
+    //   'https://trackapi.nutritionix.com/v2/search/instant?query=';
+
+    // const options = {
+    //   url: getFoodURI + foodName,
+    //   method: 'GET',
+    //   headers: {
+    //     'x-app-id': xappid,
+    //     'x-app-key': xappkey
+    //   }
+    // };
+
+    // let response;
+
+    // request(options, function(err, res, body) {
+    //   let json = JSON.parse(body);
+    //   console.log(json);
+    //   response = json;
+    // });
+
+    // const details = response.common[0];
+
+    let body = {
+      query: foodName,
+      timezone: 'US/Western'
+    };
+
+    fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-app-id': xappid,
+        'x-app-key': xappkey
+      }
+    })
+      .then(res => res.json())
+      .then(json => {
+        newEntry.calories = json.foods[0].nf_calories * servings;
+        diary.foodEaten.unshift(newEntry);
+        diary.save();
+        res.json(diary);
+      });
+
+    //console.log(newEntry.calories);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
