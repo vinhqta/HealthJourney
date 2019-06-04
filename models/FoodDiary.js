@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const FoodDiarySchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'users'
+    ref: 'user'
   },
   day: {
     type: Date

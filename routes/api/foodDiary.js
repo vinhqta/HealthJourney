@@ -8,8 +8,29 @@ const { check, validationResult } = require('express-validator/check');
 const FoodDiary = require('../../models/FoodDiary');
 const User = require('../../models/User');
 
+// @route  GET api/foodDiary/day
+// @desc   Get current user's food diary for specific day
+// @access Private
+router.get('/day', auth, async (req, res) => {
+  try {
+    const diary = await FoodDiary.findOne({ user: req.user.id });
+
+    console.log(diary);
+
+    if (!diary) {
+      return res
+        .status(400)
+        .json({ msg: 'There is no diary for this user day' });
+    }
+    res.json(diary);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route  POST api/foodDiary
-// @desc   Create or update user profile
+// @desc   Create or Updates a food diary for a specific day
 // @access Private
 router.post(
   '/',
@@ -27,7 +48,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ erros: errors.array() });
     }
-    const { day, part, foodName, servings } = req.body;
+    const { day } = req.body;
     console.log(req.body);
 
     const diaryFields = {};
@@ -35,10 +56,13 @@ router.post(
     if (day) diaryFields.day = day;
 
     try {
-      let diary = await FoodDiary.findOne({ user: req.user.id });
+      let diary = await FoodDiary.findOne({ user: req.user.id, day: day });
 
       if (diary) {
-        diary = await FoodDiary.findOneAndUpdate({ user: req.user.id });
+        diary = await FoodDiary.findOneAndUpdate({
+          user: req.user.id,
+          day: day
+        });
       }
 
       diary = new FoodDiary(diaryFields);
